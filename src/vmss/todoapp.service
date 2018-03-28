@@ -1,0 +1,8 @@
+[Unit]
+Description=Todo App
+
+[Service]
+ExecStart=/usr/bin/java -jar /opt/todoapp.jar
+
+[Install]
+WantedBy=multi-user.target
