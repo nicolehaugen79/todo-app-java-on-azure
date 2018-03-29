@@ -1,0 +1,76 @@
+
+node('aci-java-packer') {
+    def repository = 'https://github.com/ArieShout/todo-app-java-on-azure.git'
+    def branch = 'vmss'
+
+    def resourceGroup = 'jenkins-vmss-demo'
+    def location = 'eastus'
+    def servicePrincipalId = 'jenkins-vmss-demo-sp'
+
+    def vmss = "vmss";
+
+    def cosmosDbName = 'jenkins-vmss-demo-cosmosdb'
+    def dbName = 'todoapp'
+
+    def imageId = ""
+    def extractImageName = { ->
+        def imageNameMatcher = (imageId =~ /[^\/]+$/)
+        imageNameMatcher[0]
+    }
+
+    stage('SCM') {
+        git branch: branch, url: repository
+    }
+
+    stage('Build') {
+        withCredentials([azureServicePrincipal(servicePrincipalId)]) {
+            sh """
+                az login --service-principal -u "\$AZURE_CLIENT_ID" -p "\$AZURE_CLIENT_SECRET" -t "\$AZURE_TENANT_ID"
+                az account set --subscription "\$AZURE_SUBSCRIPTION_ID"
+
+                set +x
+                export DOCUMENTDB_URI="\$(az cosmosdb show -g "${resourceGroup}" -n "${cosmosDbName}" --query documentEndpoint -o tsv)"
+                export DOCUMENTDB_KEY="\$(az cosmosdb list-keys -g "${resourceGroup}" -n "${cosmosDbName}" --query primaryMasterKey -o tsv)"
+                export DOCUMENTDB_DBNAME="${dbName}"
+                set -x
+
+                sh ./mvnw clean package
+                az logout
+            """
+        }
+    }
+
+    stage('Bake Image') {
+        env.IMAGE_NAME="todoapp-image-${env.BUILD_NUMBER}"
+        withCredentials([azureServicePrincipal(servicePrincipalId)]) {
+            sh """
+                packer build \
+                    -var "client_id=\$AZURE_CLIENT_ID" \
+                    -var "client_secret=\$AZURE_CLIENT_SECRET" \
+                    -var "subscription_id=\$AZURE_SUBSCRIPTION_ID" \
+                    -var "tenant_id=\$AZURE_TENANT_ID" \
+                    -var "image_name=\$IMAGE_NAME" \
+                    -var "resource_group=${resourceGroup}" \
+                    -var "location=${location}" \
+                    -var "project_dir=." \
+                    -var "jar_file=\$( basename "\$(ls target/todo-app*.jar | head)" )" \
+                    "src/vmss/packer-todoapp.json"
+
+                az login --service-principal -u "\$AZURE_CLIENT_ID" -p "\$AZURE_CLIENT_SECRET" -t "\$AZURE_TENANT_ID"
+                az account set --subscription "\$AZURE_SUBSCRIPTION_ID"
+
+                echo "\$(az image show -g "${resourceGroup}" -n "\$IMAGE_NAME" --query id -o tsv)" >image-id
+                az logout
+            """
+        }
+        imageId = readFile('image-id').trim()
+    }
+
+    stage('Deploy') {
+        if (!imageId) {
+            error("Image ID was not found");
+        }
+
+        azureVMSSUpdate azureCredentialsId: servicePrincipalId, resourceGroup: resourceGroup, name: vmss, imageReference: [id: imageId]
+    }
+}
