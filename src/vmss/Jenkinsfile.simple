@@ -41,7 +41,7 @@ node('aci-java-packer') {
     }
 
     stage('Bake Image') {
-        env.IMAGE_NAME="todoapp-image-${env.BUILD_NUMBER}"
+        env.IMAGE_NAME="todoapp-image-${env.BUILD_NUMBER}-${new Date().format('yyyyMMdd-HHmmss')}"
         withCredentials([azureServicePrincipal(servicePrincipalId)]) {
             sh """
                 packer build \
