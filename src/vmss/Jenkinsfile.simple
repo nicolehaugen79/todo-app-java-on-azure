@@ -72,5 +72,7 @@ node('aci-java-packer') {
         }
 
         azureVMSSUpdate azureCredentialsId: servicePrincipalId, resourceGroup: resourceGroup, name: vmss, imageReference: [id: imageId]
+
+        azureVMSSUpdateInstances azureCredentialsId: servicePrincipalId, resourceGroup: resourceGroup, name: vmss, instanceIds: '*'
     }
 }
