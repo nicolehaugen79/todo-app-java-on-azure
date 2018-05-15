@@ -1,6 +1,6 @@
 
 node('aci-java-packer') {
-    def repository = 'https://github.com/ArieShout/todo-app-java-on-azure.git'
+    def repository = 'https://github.com/xiangyan99/todo-app-java-on-azure.git'
     def branch = 'vmss'
 
     def resourceGroup = 'xyToDoDemo'
