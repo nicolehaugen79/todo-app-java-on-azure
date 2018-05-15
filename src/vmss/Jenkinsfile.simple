@@ -3,13 +3,13 @@ node('aci-java-packer') {
     def repository = 'https://github.com/ArieShout/todo-app-java-on-azure.git'
     def branch = 'vmss'
 
-    def resourceGroup = 'jenkins-vmss-demo'
-    def location = 'eastus'
+    def resourceGroup = 'xyToDoDemo'
+    def location = 'westus2'
     def servicePrincipalId = 'jenkins-vmss-demo-sp'
 
     def vmss = "vmss";
 
-    def cosmosDbName = 'jenkins-vmss-demo-cosmosdb'
+    def cosmosDbName = 'xycosmosdb '
     def dbName = 'todoapp'
 
     def imageId = ""
