@@ -29,8 +29,8 @@ node('aci-java-packer') {
                 az account set --subscription "\$AZURE_SUBSCRIPTION_ID"
 
                 set +x
-                export DOCUMENTDB_URI="\$(az cosmosdb show -g "${resourceGroup}" -n "${cosmosDbName}" --query documentEndpoint -o tsv)"
-                export DOCUMENTDB_KEY="\$(az cosmosdb list-keys -g "${resourceGroup}" -n "${cosmosDbName}" --query primaryMasterKey -o tsv)"
+                export DOCUMENTDB_URI="https://xycosmosdb.documents.azure.com:443/"
+                export DOCUMENTDB_KEY="CXpiVRzWWWAqBvbDz7bA2HHmt4Te9Tb8kPJwmEANYw7QHfOi620JwaEHYfRMHtthkbkmAbtcyZV4udsbpDmmtA=="
                 export DOCUMENTDB_DBNAME="${dbName}"
                 set -x
 
