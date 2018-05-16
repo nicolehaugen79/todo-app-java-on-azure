@@ -7,6 +7,8 @@ ARG PACKER_VERSION=1.2.2
 USER root
 
 RUN wget https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip -O packer.zip && \
-    unzip packer.zip && mv packer /usr/bin && rm -f packer.zip
+    unzip packer.zip && mv packer /usr/bin && rm -f packer.zip && \
+    wget https://azurecliprod.blob.core.windows.net/install.py && \
+    printf "/usr/local/lib/azure-cli\n/usr/local/bin\n" | python install.py
 
 USER jenkins
