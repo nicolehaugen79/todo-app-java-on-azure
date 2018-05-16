@@ -1,4 +1,4 @@
-
+node('master') {
 
     def repository = 'https://github.com/xiangyan99/todo-app-java-on-azure.git'
     def branch = 'vmss'
@@ -76,3 +76,4 @@
         azureVMSSUpdateInstances azureCredentialsId: servicePrincipalId, resourceGroup: resourceGroup, name: vmss, instanceIds: '*'
     }
 
+}
